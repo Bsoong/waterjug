@@ -26,31 +26,31 @@ struct State {
 		oss << "(" << a << ", " << b << ", " << c << ")";
 		return oss.str();
 	}
-	/*
-int main() {
-    State s(0, 0, 8);
-    cout << s.to_string() << endl;
-    s.a += 3;
-    s.c -= 3;
-    cout << s.to_string() << endl;
-    return 0;
-}
-	 */
+
 };
-int isNumber(vector<string> n){
+bool isNumber(vector<string> n){
 	for(string s : n){
 		for(char c: s){
 			if(!isdigit(c)){
-				int x = (int)c;
-				return x;
+				return false;
 			}
 		}
 	}
-	return -1;
+	return true;
+}
+string find_fail_string(vector<string> n){
+	for(string s : n){
+		for(char c: s){
+			if(!isdigit(c)){
+				return s;
+			}
+		}
+	}
+	return " ";
 }
 char isJug(vector<string> n){
 	int size = n.size();
-	for(int i=0; i<size; i++){
+	for(int i=1; i<size; i++){
 		for(char c: n[i]){
 			if(!isdigit(c)){
 				return i;
@@ -137,54 +137,75 @@ bool find_solution(State c, State g, State r){
 	}
 	return false;
 }
-void case1(State c, State r){
-	if(r.a != c.a || r.a-r.c<=r.c){
-		r.a += c.a-r.a;
-		r.c -= c.a-r.a;
-	}
-}
+
+
 void display_solution(State cap, State goal){
 	return ;
 }
+
+
 int main(int argc, char * const argv[]){
-	int c = argc;
-	vector<string> v;
-	v = {"0",argv[1],argv[2],argv[3],argv[4],argv[5],argv[6]};
-	int num_test =isNumber(v);
-	int capA,capB,capC,goalA,goalB,goalC;
-	if(c != 7){
+	if(argc != 7){
 		// Prints Usage if improper number of arguments
 		cerr << "Usage: ./waterjugpuzzle <cap A> <cap B> <cap C> <goal A> <goal B> <goal C>"<< endl;
 		return 1;
-		if(num_test!=-1){
-			cerr << "Error: Invalid capacity '" << (char)num_test << "' for jug "<< toupper(isJug(v)) <<"."  << endl;
-			return 1;
+	}
+	vector<string> v;
+	v = {"0",argv[1],argv[2],argv[3],argv[4],argv[5],argv[6]};
+	string zero = "0";
+	if(v[3]==zero){
+		// Capacity of JugC cannot equal 0
+		cout << "Error: Invalid capacity '0' for jug C.";
+		return 1;
+	}
+	if(!isNumber(v)){
+		// If all of the characters in each input string are not digits, do this
+		int jug = isJug(v);
+		// All Error messages based on which jug contained the first non-integer input
+		if (jug==1){
+			cerr << "Error: Invalid capacity '" << find_fail_string(v) << "' for jug A."  << endl;
+		} else if (jug==2){
+			cerr << "Error: Invalid capacity '" << find_fail_string(v) << "' for jug B."  << endl;
+		} else if (jug==3) {
+			cerr << "Error: Invalid capacity '" << find_fail_string(v) << "' for jug C."  << endl;
+		} else if (jug==4){
+			cerr << "Error: Invalid goal '" << find_fail_string(v) << "' for jug A."  << endl;
+		} else if (jug==5){
+			cerr << "Error: Invalid goal '" << find_fail_string(v) << "' for jug B."  << endl;
+		} else {
+			cerr << "Error: Invalid goal '" << find_fail_string(v) << "' for jug C."  << endl;
 		}
-		capA=stoi(v[1]), capB=stoi(v[2]), capC=stoi(v[3]), goalA=stoi(v[4]), goalB=stoi(v[5]), goalC=stoi(v[6]);
-		if(goalA>capA || goalB>capB || goalC>capC){
-			if(goalA>capA){
-				cerr << "Error: Goal cannot exceed capacity of jug A." << endl;
-			}  else if(goalB>capB){
-				cerr << "Error: Goal cannot exceed capacity of jug B." << endl;
-			} else {
-				cerr << "Error: Goal cannot exceed capacity of jug C." << endl;
-			}
-			return 1;
-		} else if(goalA+goalB+goalC != capC){
-			cerr << "Error: Total gallons in goal state must be equal to the capacity of jug C." << endl;
-			return 1;
-		} else{
-			State cap(capA,capB,capC);
-			State goal(goalA,goalB,goalC);
-			State result(0,0,cap.c);
-			bool solution = find_solution(cap, goal,result);
-			if (solution){
-				//display_solution(cap, cap);
-				cout << "trueeee" << endl;
-			} else {
-				cout << "No Solution." << endl;
-			}
-			return 0;
+
+		return 1;
+	}
+	int capA,capB,capC,goalA,goalB,goalC;
+	capA=stoi(v[1]), capB=stoi(v[2]), capC=stoi(v[3]), goalA=stoi(v[4]), goalB=stoi(v[5]), goalC=stoi(v[6]);
+	if(goalA>capA || goalB>capB || goalC>capC){
+		// If any of the goals are greater than it's cap, print proper error
+		if(goalA>capA){
+			cerr << "Error: Goal cannot exceed capacity of jug A." << endl;
+		}  else if(goalB>capB){
+			cerr << "Error: Goal cannot exceed capacity of jug B." << endl;
+		} else {
+			cerr << "Error: Goal cannot exceed capacity of jug C." << endl;
 		}
+		return 1;
+	} else if(goalA+goalB+goalC != capC){
+		// If sum of all goals is greater than the capacity of C, error
+		cerr << "Error: Total gallons in goal state must be equal to the capacity of jug C." << endl;
+		return 1;
+	} else{
+		// If reaches this point, look for solution
+		State cap(capA,capB,capC);
+		State goal(goalA,goalB,goalC);
+		State result(0,0,cap.c);
+		bool solution = find_solution(cap, goal,result);
+		if (solution){
+			//display_solution(cap, goal);
+			cout << "trueeee" << endl;
+		} else {
+			cout << "No Solution." << endl;
+		}
+		return 0;
 	}
 }
